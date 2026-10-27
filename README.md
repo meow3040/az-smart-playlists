@@ -1,15 +1,15 @@
 # Smart Playlists for XDJ-AZ
 
-Three saved smart lists inside the AZ-MODS Library Browser page. Combine a BPM range,
-genre-playlist membership, musical key, track length and the artist on a selected deck.
-Sort matches by BPM, title or artist. Each search reads the current USB library again.
+Tap **SMART PLAYLIST** on the normal browse/playlist screen to open live related tracks
+for the track playing now. Matches follow its BPM and compatible musical keys. The
+original three saved filter sets are still available on the mod's own page.
 
 **Requirements:** an XDJ-AZ running AZ-MODS 1.2.3 or newer and an exported rekordbox USB
 library. This is a custom extension of the upstream Library Browser example.
 
 ## Download and install
 
-- [Download the latest test build](https://github.com/meow3040/az-smart-playlists/releases/tag/v1.1.1)
+- [Download the latest test build](https://github.com/meow3040/az-smart-playlists/releases/tag/v1.2.0)
 - [Installation and usage in Hebrew](library-browser/INSTALL-HE.md)
 - [Filters, limits and build instructions](library-browser/README.md)
 
@@ -32,7 +32,34 @@ For manual installation, the release also includes a ready-to-extract USB ZIP an
 equivalent `.azmod` package. Use one of them. The USB ZIP does not replace
 `MODS/azmods.cfg`; follow the guide to enable the mod.
 
-## What the lists do
+## Live SMART PLAYLIST
+
+After installing or updating and choosing Reload now, open the controller's normal
+playlist/browse screen. **SMART PLAYLIST** appears near the upper-right corner. Tap it to
+open the overlay, and turn the browse knob to scroll. BACK or X closes it and gives the
+controls back to the native browser. The SDK groups playlists, browsing and Tag List under
+the same screen type, so the button is visible on those browse screens.
+
+- **Reference:** Auto uses the sole playing deck. When several decks play, choose Deck 1,
+  2, 3 or 4 explicitly. All four decks are inspected even in a two-deck view.
+- **BPM:** tap to cycle tolerance through +/-2, 4, 6 or 10 BPM. The default is +/-4.
+- **Key:** Compatible accepts the same Camelot key, its adjacent number on the same A/B
+  wheel, or its relative major/minor. Any disables the key filter. When the reference key
+  cannot be resolved, the list explicitly reports a BPM-only match.
+- **Rescan USBs:** refresh the libraries after inserting or changing a USB. They also
+  refresh on opening, reference-track changes and every 30 seconds while the overlay is open.
+
+The reference is checked about once a second. Tempo changes refilter the cached library
+without reading the USB again. Results come from both readable USBs, show their source,
+exclude positively identified playing tracks, and sort by closest BPM first. Every match
+within the scan is scrollable; live results do not have the saved list's 256-row display cap.
+The scan is bounded at 20,000 tracks per USB and clearly reports incomplete scans.
+
+**This is an overlay on the browse screen, not a stored native playlist.** It is view-only;
+use the native browser to load a track. Live matching uses BPM and key, not genre or audio
+analysis. The USB library is never modified.
+
+## Saved filter sets
 
 Open **Mod Menu > Community Mods > Installed > Smart Playlists**, then **Smart Playlists >**
 under the selected USB. Choose Smart 1, 2 or 3 and edit its rules with the browse knob.
@@ -58,8 +85,8 @@ named `Genre: ...` playlists exported from rekordbox, with no inferred genre lab
 
 ## Validation
 
-The initial test build passed 59 focused checks, AddressSanitizer and UndefinedBehaviorSanitizer,
-the SDK's functional and soak harness, a deliberately broken-copy control, and the SDK package
+The build is checked with focused rule, reader and UI tests, AddressSanitizer and UndefinedBehaviorSanitizer,
+the SDK's functional and soak harness (including the live surface), a deliberately broken-copy control, and the SDK package
 validator. The ARM64 binary was cross-compiled using GCC 7 and an Ubuntu 18.04 sysroot.
 This is not the SDK's official reproducible-container build.
 

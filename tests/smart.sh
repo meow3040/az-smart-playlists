@@ -15,10 +15,15 @@ ASAN_OPTIONS=detect_leaks=0 "$B/smart-san"
 $CC $FLAGS -fPIC -fvisibility=hidden -shared -o "$B/library-browser.so" library-browser/library-browser.c -lpthread -lm
 $CC $FLAGS -fPIC -shared -o "$B/iocount.so" "$SDK/tools/harness/iocount.c" -ldl
 $CC $FLAGS "-DAZ_HARNESS_SCENARIOS=\"$(pwd)/tests/scenarios.c\"" -rdynamic -o "$B/harness" "$SDK/tools/harness/harness.c" -ldl -lm -lpthread
-LD_PRELOAD="$B/iocount.so" "$B/harness" "$B/library-browser.so" meow-smart-playlists 1 --functional
+LD_PRELOAD="$B/iocount.so" "$B/harness" "$B/library-browser.so" meow-smart-playlists 3 --functional
+# Exercise the real reader thread and surface callbacks under ASan/UBSan as well.
+SAN="-fsanitize=address,undefined -fno-sanitize-recover=all"
+$CC $FLAGS $SAN -fPIC -fvisibility=hidden -shared -o "$B/live-san.so" library-browser/library-browser.c -lpthread -lm
+$CC $FLAGS $SAN -no-pie "-DAZ_HARNESS_SCENARIOS=\"$(pwd)/tests/scenarios.c\"" -rdynamic -o "$B/harness-san" "$SDK/tools/harness/harness.c" -ldl -lm -lpthread
+ASAN_OPTIONS=detect_leaks=0 "$B/harness-san" "$B/live-san.so" meow-smart-playlists 3 --functional
 # A broken read path must fail the end-to-end scenario, so a green result has a control.
 sed 's/if (result < 0)/if (result != 0)/' library-browser/library-browser.c > "$B/broken.c"
 $CC $FLAGS -Ilibrary-browser -fPIC -fvisibility=hidden -shared -o "$B/broken.so" "$B/broken.c" -lpthread -lm
-"$B/harness" "$B/broken.so" meow-smart-playlists 1 --functional > "$B/broken.log" 2>&1 || true
+"$B/harness" "$B/broken.so" meow-smart-playlists 3 --functional > "$B/broken.log" 2>&1 || true
 grep -q '^CHECK functional FAIL' "$B/broken.log"
 printf '%s\n' 'Control: rejecting truncated results fails the functional scenario as expected.'

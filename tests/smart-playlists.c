@@ -14,6 +14,9 @@ static int checks;
     } while (0)
 static int fixture_mode, fixture_port, genre_id = 20, tracks_called, last_playlist;
 static int fixture_deck_loaded = 1;
+static int fixture_live, fixture_view = AZ_VIEW_BROWSE, fixture_focus, fixture_refuse_focus, fixture_cancel_live;
+static az_rect fixture_surface_rect;
+static az_deck_info fixture_live_decks[4];
 static struct {
     char key[32], value[128];
 } config[32];
@@ -68,23 +71,61 @@ static int mock_tracks(const char *id, int stick, int playlist, int (*fn)(const 
     (void)id;
     tracks_called++;
     last_playlist = playlist;
-    if (stick != fixture_port || fixture_mode == 1) return -1;
-    for (int i = 0; i < (fixture_mode == 5 ? 300 : 4); i++) {
+    if ((stick != fixture_port && fixture_mode != 9) || fixture_mode == 1) return -1;
+    for (int i = 0; i < (fixture_mode == 5 || fixture_mode == 8 ? 300 : 4); i++) {
         char title[64];
         snprintf(title, sizeof title, "Track %03d", i);
         az_track t = { .size = sizeof t, .id = (uint32_t)i + 1, .title = title, .artist = i % 2 ? "B" : "A", .key = i % 2 ? "9A" : "Am", .bpm = fixture_mode == 5 ? 400 - i : 120 + i, .len_s = 200 };
+        if (fixture_mode == 8) t.bpm = 125;
         if (fn(&t, user)) break;
+    }
+    if (fixture_cancel_live) {
+        fixture_cancel_live = 0;
+        pthread_mutex_lock(&live_mu);
+        live_request = (struct live_request){ .version = ++live_version };
+        live_pending = 1;
+        live_ready = 0;
+        pthread_mutex_unlock(&live_mu);
     }
     return fixture_mode == 6 ? 1 : 0;
 }
 static void mock_redraw(void) {}
-static int mock_deck_count(void) { return 2; }
+static int mock_deck_count(void) { return fixture_live ? 4 : 2; }
 static int mock_deck(int deck, az_deck_info *out)
 {
+    if (fixture_live) {
+        *out = fixture_live_decks[deck];
+        return 0;
+    }
     if (deck >= 2) return -1;
     out->loaded = fixture_deck_loaded;
     snprintf(out->artist, sizeof out->artist, "A");
     return 0;
+}
+static int mock_view(void) { return fixture_view; }
+static az_surface *mock_surface(const char *id, const az_surface_v1 *s)
+{
+    (void)id;
+    assert(s->views == AZ_VIEW_BIT(AZ_VIEW_BROWSE));
+    return (az_surface *)(uintptr_t)1;
+}
+static void mock_place(az_surface *s, az_rect r)
+{
+    (void)s;
+    fixture_surface_rect = r;
+}
+static void mock_show(az_surface *s, int on)
+{
+    (void)s;
+    (void)on;
+}
+static void mock_surface_redraw(az_surface *s) { (void)s; }
+static int mock_focus(az_surface *s, int on)
+{
+    (void)s;
+    if (on && fixture_refuse_focus) return 0;
+    fixture_focus = on;
+    return 1;
 }
 static const az_core_v1 core = {
     .abi = AZ_MOD_ABI,
@@ -98,6 +139,12 @@ static const az_core_v1 core = {
     .request_redraw = mock_redraw,
     .deck_count = mock_deck_count,
     .deck_info = mock_deck,
+    .view = mock_view,
+    .surface_create = mock_surface,
+    .surface_place = mock_place,
+    .surface_show = mock_show,
+    .surface_redraw = mock_surface_redraw,
+    .surface_focus = mock_focus,
 };
 
 static void test_predicates(void)
@@ -272,12 +319,126 @@ static void test_ui_and_settings(void)
     fixture_mode = 0;
 }
 
+static void test_live(void)
+{
+    CHECK(live_keys_match(1, 12) && live_keys_match(12, 1));
+    CHECK(live_keys_match(8, 20) && live_keys_match(20, 8));
+    CHECK(!live_keys_match(8, 21) && !live_keys_match(8, 10));
+    CHECK(!live_keys_match(0, 8) && !live_keys_match(25, 1));
+    fixture_live = 1;
+    fixture_live_decks[0] = (az_deck_info){ .size = sizeof(az_deck_info), .loaded = 1, .playing = 1, .bpm = 122, .content_id = 1 };
+    snprintf(fixture_live_decks[0].title, sizeof fixture_live_decks[0].title, "Track 000");
+    snprintf(fixture_live_decks[0].artist, sizeof fixture_live_decks[0].artist, "A");
+    CHECK(live_init() == 0);
+    CHECK(fixture_surface_rect.w == LIVE_BADGE.w && !fixture_focus);
+    struct live_request r = live_capture();
+    CHECK(r.reference == 0 && !r.notice[0]);
+    fixture_live_decks[1] = fixture_live_decks[0];
+    r = live_capture();
+    CHECK(r.reference == -1 && strstr(r.notice, "Several"));
+    live_deck_choice = 2;
+    r = live_capture();
+    CHECK(r.reference == 1);
+    live_deck_choice = 4;
+    r = live_capture();
+    CHECK(r.reference == -1 && strstr(r.notice, "not playing"));
+    live_deck_choice = 0;
+    memset(&fixture_live_decks[1], 0, sizeof fixture_live_decks[1]);
+    fixture_live_decks[0].bpm = NAN;
+    r = live_capture();
+    CHECK(strstr(r.notice, "no known BPM"));
+    fixture_live_decks[0].bpm = 122;
+
+    struct live_track candidates[2] = {
+        { .row = { .title = "Track 000", .artist = "A", .key = "Am", .bpm = 122 }, .id = 1, .complete = 1 },
+        { .row = { .title = "Track 001", .artist = "B", .key = "9A", .bpm = 126 }, .id = 2, .complete = 1 },
+    };
+    r = live_capture();
+    CHECK(live_reference_key(candidates, 2, &r.decks[0]) == 8);
+    CHECK(!live_matches(&candidates[0], &r, 8) && live_matches(&candidates[1], &r, 8));
+    candidates[1].row.bpm = 126.01;
+    CHECK(!live_matches(&candidates[1], &r, 8));
+    candidates[1].row.bpm = INFINITY;
+    CHECK(!live_matches(&candidates[1], &r, 8));
+    candidates[1].row.bpm = 124;
+    candidates[1].row.key[0] = 0;
+    CHECK(!live_matches(&candidates[1], &r, 8));
+    CHECK(live_matches(&candidates[1], &r, 0)); /* explicitly reported BPM-only fallback */
+    candidates[1] = candidates[0];
+    snprintf(candidates[1].row.key, sizeof candidates[1].row.key, "6A");
+    CHECK(live_reference_key(candidates, 2, &r.decks[0]) == 0); /* conflicting duplicates */
+    candidates[0].complete = 0;
+    candidates[1].complete = 0;
+    CHECK(live_reference_key(candidates, 2, &r.decks[0]) == 0);
+
+    az_event tap = { .kind = AZ_EV_TAP }, back = { .kind = AZ_EV_BACK };
+    fixture_refuse_focus = 1;
+    live_input(&tap, NULL);
+    CHECK(!live_open && !fixture_focus);
+    fixture_refuse_focus = 0;
+    live_input(&tap, NULL);
+    CHECK(live_open && fixture_focus);
+    tracks_called = 0;
+    live_read_pending();
+    CHECK(live_ready && live_result.n == 3 && live_result.reference_key == 8);
+    CHECK(tracks_called == 2 && live_result.ports == 1);
+    CHECK(!strcmp(live_result.tracks[live_result.order[0]].row.title, "Track 002"));
+    int before = tracks_called;
+    fixture_live_decks[0].bpm = 123;
+    live_submit(0);
+    live_read_pending();
+    CHECK(tracks_called == before && live_result.bpm == 123); /* cached pitch update */
+    CHECK(!strcmp(live_result.tracks[live_result.order[0]].row.title, "Track 003"));
+    live_submit(0);
+    CHECK(!live_pending); /* no repeated unchanged scans */
+    fixture_mode = 8;
+    fixture_live_decks[0].bpm = 125;
+    live_submit(1);
+    live_read_pending();
+    CHECK(live_result.n == 299 && live_result.scanned == 300); /* all matches, not first 256 */
+    fixture_mode = 9;
+    live_submit(1);
+    live_read_pending();
+    CHECK(live_result.ports == 3 && live_result.scanned == 8);
+    fixture_mode = 6;
+    live_submit(1);
+    live_read_pending();
+    CHECK(live_result.limited);
+    fixture_mode = 1;
+    live_submit(1);
+    live_read_pending();
+    CHECK(live_result.n == 0 && strstr(live_result.notice, "No readable"));
+    fixture_live_decks[0].bpm = 126;
+    live_submit(0);
+    live_read_pending();
+    CHECK(strstr(live_result.notice, "No readable"));
+    fixture_mode = 0;
+    live_submit(1);
+    fixture_cancel_live = 1;
+    live_read_pending();
+    CHECK(!live_ready && live_pending); /* a cancelled scan cannot replace the request */
+    live_read_pending();
+    CHECK(!live_result.tracks && !live_result.order);
+    live_input(&back, NULL);
+    live_read_pending();
+    CHECK(!live_open && !fixture_focus && !live_result.tracks);
+    live_input(&tap, NULL);
+    live_read_pending();
+    fixture_view = AZ_VIEW_SOURCE;
+    live_tick();
+    live_read_pending();
+    CHECK(!live_open && !fixture_focus && !live_result.tracks); /* navigation releases the knob */
+    fixture_view = AZ_VIEW_BROWSE;
+    fixture_live = 0;
+}
+
 int main(void)
 {
     C = &core;
     test_predicates();
     test_reader();
     test_ui_and_settings();
+    test_live();
     printf("Smart playlists: %d checks passed\n", checks);
     return 0;
 }

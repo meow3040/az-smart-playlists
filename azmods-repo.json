@@ -7,13 +7,13 @@
     {
       "id": "meow-smart-playlists",
       "name": "Smart Playlists",
-      "version": "1.1.1",
+      "version": "1.2.0",
       "author": "Kyle-Hosman",
-      "summary": "Browse USB libraries and save three smart playlists with BPM, genre-playlist, key, length and artist filters.",
-      "icon": "https://github.com/meow3040/az-smart-playlists/releases/download/v1.1.1/meow-smart-playlists-1.1.1-icon.png",
-      "package": "https://github.com/meow3040/az-smart-playlists/releases/download/v1.1.1/meow-smart-playlists-1.1.1.azmod",
-      "sha256": "565ad82f624ac36e568aef4efc680d65506458982c2c9aeda4b5226250369f62",
-      "size": 70849,
+      "summary": "SMART PLAYLIST on the browse screen: live BPM and harmonic-key matches for the playing track, plus saved filters.",
+      "icon": "https://github.com/meow3040/az-smart-playlists/releases/download/v1.2.0/meow-smart-playlists-1.2.0-icon.png",
+      "package": "https://github.com/meow3040/az-smart-playlists/releases/download/v1.2.0/meow-smart-playlists-1.2.0.azmod",
+      "sha256": "a55f61fe8f4399ccbbcd74993468ba183729d1de7d69a2d7651b2c21302ebb5b",
+      "size": 80539,
       "firmware": [
         "any"
       ],
@@ -23,7 +23,7 @@
       "category": "tools",
       "license": "GPL-3.0-only",
       "min_core": "1.2.3",
-      "description": "Open Smart Playlists beneath a USB in Library Browser. Save three rule sets with BPM, key, length and artist filters; sort by BPM, title or artist. Genre uses exported playlists named Genre: House, etc., because genre tags are not exposed.\n\nThese are view-only lists in the mod page. Load tracks through the native browser. Rules are saved in core settings and shared across USB ports. Each search rescans up to 20,000 tracks and displays the first 256 matches after sorting, with scan-limit notices. Library reads run on a worker. No library writes, firmware patches, audio changes or network."
+      "description": "Tap SMART PLAYLIST on the browse/playlist screen for live related tracks from both USBs. Auto uses the sole playing deck; choose a reference when several play. Adjust BPM tolerance and compatible-key filtering. Unknown reference key is labelled BPM only. Turn the knob to scroll all scanned matches.\n\nThe button and list are a read-only overlay. Load tracks in the native browser. Saved filters remain in the mod page. Scans cover up to 20,000 tracks per USB and report limits. No USB writes, audio changes, firmware patches or network."
     }
   ]
 }

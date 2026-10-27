@@ -43,7 +43,7 @@ CFLAGS += $(NO_OUTLINE_ATOMICS)
 .PHONY: all clean
 all: $(OUT)/$(MOD_ID).so
 
-$(OUT)/$(MOD_ID).so: $(SRCS) smart-rules.h smart-ui.h $(AZ_SDK_INCLUDE)/azmod-mod.h | $(OUT)
+$(OUT)/$(MOD_ID).so: $(SRCS) smart-rules.h smart-ui.h live-playlist.h $(AZ_SDK_INCLUDE)/azmod-mod.h | $(OUT)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(SRCS) $(LDLIBS)
 
 $(OUT):

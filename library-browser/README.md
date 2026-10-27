@@ -5,6 +5,29 @@ under **Mod Menu > Community Mods > Repositories > Add**, then choosing **Smart 
 in **Browse**. Its independent id is `meow-smart-playlists`, so it can be installed beside
 the upstream Library Browser. The source folder retains its original `library-browser` name.
 
+## Live button on the playlist screen
+
+The `SMART PLAYLIST` button is a surface on the native BROWSE screen, which the SDK uses
+for Playlist, library browsing and Tag List. Tap it for live matches. It expands into an
+overlay, owns the browse knob while open, and releases it on BACK, X or leaving BROWSE.
+It does not insert a database playlist or load a track to a deck.
+
+Auto mode selects a reference only when exactly one of the four decks is playing. Choose
+a deck explicitly when several play. The default tolerance is +/-4 BPM; tap BPM to cycle
+through 2, 4, 6 and 10. Key compatibility is the same Camelot key, a neighbour on the same
+wheel, or the relative major/minor. Key Any disables the filter. If `deck_info` has no key,
+the worker resolves it only from unambiguous title, artist and available content-id metadata
+in the library; it never guesses a USB from a content id. Conflicting or truncated metadata
+leaves the reference key unknown, and the display says BPM only.
+
+The reference is polled every second while the surface is open. A tempo or filter change
+reuses the immutable worker cache. Opening, changing reference track, tapping Rescan, or
+30 seconds passing requests a fresh read of both USB libraries. All matched rows are
+scrollable, sorted by BPM distance, within the 20,000-per-port core limit. Closing the
+surface cancels pending work and releases the cache on the worker. A generation check
+prevents an obsolete read from replacing newer results. No library I/O, allocations or
+sorting occur in the surface callbacks or tick.
+
 An example of the library services added in AZ-MODS 1.2.3: the rekordbox playlists on the
 USBs in the deck, on a Mod Menu page. The knob moves, a click opens a playlist's tracks
 (title, artist, BPM, key), BACK goes back to the list.
@@ -60,6 +83,8 @@ and an incomplete scan have separate messages.
 | `thread_start` | `init()`: the reader thread, where every library call is made |
 | `cfg_get`, `cfg_set`, `cfg_get_str`, `cfg_set_str` | three independent saved rule sets (`smart-ui.h`) |
 | `deck_info` | optional reference artist, captured when Show is clicked |
+| `surface_create`, `surface_place`, `surface_show`, `surface_focus`, `view` | live browse-screen button and expanded results (`live-playlist.h`) |
+| `deck_info`, `lib_tracks` | all-deck playing reference, live BPM/key matches and cached library scans |
 | `register_screen`, `draw_header`, `draw_text`, `fill_rect`, `text_width` | the page |
 
 ## Rules it follows

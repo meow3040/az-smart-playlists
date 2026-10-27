@@ -210,12 +210,25 @@ static void functional_deck_overview(void)
     expect(n >= 30 && n <= 40, what);
 }
 
+static void set_deck(int d, int loaded, int playing, double bpm, const char *title, const char *artist);
+
 /* Ticks until the page shows `s` or `secs` of real time pass (the mod's own thread reads). */
 static int wait_for(const char *s, double secs)
 {
     for (int i = 0; i < (int)(secs * 50); i++) {
         ticks(1);
         call_draw(FULL, 60);
+        if (frame_has(s)) return 1;
+        usleep(20000);
+    }
+    return 0;
+}
+
+static int wait_surface(const char *s, double secs)
+{
+    for (int i = 0; i < (int)(secs * 50); i++) {
+        ticks(1);
+        paint_surfaces(1);
         if (frame_has(s)) return 1;
         usleep(20000);
     }
@@ -272,6 +285,41 @@ static void functional_library_browser(void)
     call_input(AZ_EV_BACK, 0, 0, 0);
     call_draw(FULL, 60);
     expect(frame_has("Warmup"), "BACK from smart rules returns to USB playlists");
+
+    expect(nsurf == 1, "one live playlist overlay is registered");
+    if (nsurf != 1) return;
+    D.count = 4;
+    for (int i = 0; i < 4; i++) set_deck(i, 0, 0, 0, "", "");
+    set_deck(0, 1, 1, 128, "Opening Track", "Artist A");
+    __atomic_store_n(&D.view, AZ_VIEW_SOURCE, __ATOMIC_RELAXED);
+    paint_surfaces(1);
+    expect(frame_n == 0, "the live button is absent outside the browse screen");
+    __atomic_store_n(&D.view, AZ_VIEW_BROWSE, __ATOMIC_RELAXED);
+    paint_surfaces(1);
+    expect(frame_has("SMART PLAYLIST"), "SMART PLAYLIST is visible on the native browse/playlist screen");
+    az_rect badge = surfs[0].r;
+    surface_input(0, AZ_EV_TAP, 0, badge.x + 20, badge.y + 20);
+    expect(focus_surf == 0, "opening the live list takes the browse knob");
+    expect(wait_surface("1 matches / 3 scanned", 3), "the live list excludes the reference and unknown tempo");
+    expect(frame_has("Second Track - Artist B") && frame_has("126.5"), "the compatible track appears in the live list");
+    expect(frame_has("Load tracks in the native browser"), "the overlay clearly states the loading limitation");
+    set_deck(1, 1, 1, 126.5, "Second Track", "Artist B");
+    expect(wait_surface("Several decks are playing", 3), "auto mode refuses to guess when two decks play");
+    az_rect panel = surfs[0].r;
+    surface_input(0, AZ_EV_TAP, 0, panel.x + 24, panel.y + 64);
+    expect(wait_surface("0 matches / 3 scanned", 3), "choosing deck 1 also excludes the other playing track");
+    set_deck(1, 1, 0, 126.5, "Second Track", "Artist B");
+    expect(wait_surface("1 matches / 3 scanned", 3), "stopping the second deck refreshes the results automatically");
+    set_deck(0, 1, 1, 140, "Opening Track", "Artist A");
+    expect(wait_surface("0 matches / 3 scanned", 3), "moving the pitch updates matches without reopening");
+    expect(frame_has("No matches."), "empty live results explain how to widen the filters");
+    surface_input(0, AZ_EV_BACK, 0, 0, 0);
+    expect(focus_surf < 0 && surfs[0].r.w == badge.w, "BACK collapses the overlay and releases the knob");
+    surface_input(0, AZ_EV_TAP, 0, badge.x + 20, badge.y + 20);
+    __atomic_store_n(&D.view, AZ_VIEW_DECK, __ATOMIC_RELAXED);
+    ticks(1);
+    paint_surfaces(1);
+    expect(focus_surf < 0 && frame_n == 0, "leaving BROWSE closes the live list and releases controls");
 }
 
 /* One block of a sine at `amp` (both channels) into every tap on `deck`, armed like a callback. */

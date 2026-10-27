@@ -70,6 +70,9 @@ static char smart_error[128];
 /* UI -> reader requests, and reader -> UI "something new to draw". */
 static atomic_int want_list = 1;
 static atomic_int fresh;
+static void live_read_pending(void);
+static void live_tick(void);
+static int live_init(void);
 
 /* ---- the reader thread: every stick read happens here ---------------------------------- */
 
@@ -261,6 +264,7 @@ static void *reader(void *arg)
             read_tracks(&req);
             atomic_store(&fresh, 1);
         }
+        live_read_pending();
         nanosleep(&nap, NULL);
     }
     return NULL;
@@ -290,6 +294,7 @@ static void status(az_draw *d, az_rect a, int row, int px, const char *s)
 }
 
 #include "smart-ui.h"
+#include "live-playlist.h"
 
 static void draw_list(az_draw *d, az_rect a, int row, int px)
 {
@@ -452,6 +457,7 @@ static const az_screen_v1 SCREEN = {
 static void tick(void)
 {
     if (atomic_exchange(&fresh, 0)) C->request_redraw();
+    live_tick();
 }
 
 static int init(const az_core_v1 *core)
@@ -469,6 +475,7 @@ static int init(const az_core_v1 *core)
         C->log(MOD_ID, "register_screen refused");
         return 3;
     }
+    if (live_init() != 0) return 5;
     /* last, after everything that can fail: a thread outlives a refused init */
     if (C->thread_start(MOD_ID, "library reader", reader, NULL) != 0) {
         C->log(MOD_ID, "thread_start refused");
