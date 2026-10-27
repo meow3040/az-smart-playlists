@@ -9,17 +9,32 @@ library. This is a custom extension of the upstream Library Browser example.
 
 ## Download and install
 
-- [Download the latest test build](https://github.com/meow3040/az-smart-playlists/releases/tag/v1.1.0)
+- [Download the latest test build](https://github.com/meow3040/az-smart-playlists/releases/tag/v1.1.1)
 - [Installation and usage in Hebrew](library-browser/INSTALL-HE.md)
 - [Filters, limits and build instructions](library-browser/README.md)
 
-The release includes a ready-to-extract USB ZIP and the equivalent `.azmod` package.
-Use one of them. It updates the `library-browser` mod, so back up an existing installation
-first. The USB ZIP does not replace `MODS/azmods.cfg`; follow the guide to enable the mod.
+On the controller, open **Mod Menu > Community Mods > Repositories > Add** and enter:
+
+```text
+meow3040/az-smart-playlists
+```
+
+Then open **Browse**, select **Smart Playlists**, install it, and choose **Reload now**
+when no set is playing. The public `azmods-repo.json` on the default branch points to the
+release package and icon with its exact size and SHA-256. The repository works when added
+directly; it does not need to be listed in the optional Mod Index.
+
+The mod uses the independent id `meow-smart-playlists`, so it can coexist with the original
+Library Browser. Version 1.1.0 used the original mod's id and was a manual-install test;
+its saved filters do not automatically migrate to the new id.
+
+For manual installation, the release also includes a ready-to-extract USB ZIP and the
+equivalent `.azmod` package. Use one of them. The USB ZIP does not replace
+`MODS/azmods.cfg`; follow the guide to enable the mod.
 
 ## What the lists do
 
-Open **Mod Menu > Community Mods > Installed > Library Browser**, then **Smart Playlists >**
+Open **Mod Menu > Community Mods > Installed > Smart Playlists**, then **Smart Playlists >**
 under the selected USB. Choose Smart 1, 2 or 3 and edit its rules with the browse knob.
 Settings save automatically. Select **Show matching tracks >** to rebuild the results.
 

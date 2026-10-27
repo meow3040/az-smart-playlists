@@ -22,7 +22,7 @@
 #include "azmod-mod.h"
 #include "smart-rules.h"
 
-#define MOD_ID "library-browser"
+#define MOD_ID "meow-smart-playlists"
 #define NSTICKS 2
 #define MAX_ROWS 512        /* playlist rows shown, both sticks */
 #define MAX_TRACKS 256        /* tracks shown for one playlist */

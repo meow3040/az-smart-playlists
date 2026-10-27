@@ -14,27 +14,40 @@ rekordbox, ולא ניתן לטעון מהן שיר ישירות לדק. טעי�
 
 ## התקנה
 
+### דרך הקונטרולר
+
+1. לפתוח **Mod Menu → Community Mods → Repositories → Add**.
+2. להזין `meow3040/az-smart-playlists`.
+3. לפתוח **Browse**, לבחור **Smart Playlists** ולבחור התקנה.
+4. לבחור **Reload now** כשלא מתנגן סט.
+5. לפתוח **Community Mods → Installed → Smart Playlists**.
+
+לתוסף יש מזהה נפרד, `meow-smart-playlists`, והוא יכול להיות מותקן לצד Library Browser
+המקורי. אם הותקנה גרסת הניסיון 1.1.0, הכללים השמורים שלה לא עוברים אוטומטית למזהה החדש.
+
+### התקנה ידנית דרך USB
+
 1. לגבות את תיקיית `MODS` שב־USB אם היא קיימת.
-2. לחלץ את `smart-playlists-usb-1.1.0.zip` לשורש ה־USB. החבילה מוסיפה או מעדכנת את
-   `MODS/community-mods/library-browser/`. היא מחליפה את Library Browser אם הוא מותקן.
+2. לחלץ את `smart-playlists-usb-1.1.1.zip` לשורש ה־USB. החבילה מוסיפה או מעדכנת את
+   `MODS/community-mods/meow-smart-playlists/`.
 3. בקובץ הקיים `MODS/azmods.cfg`, להוסיף את השורה הבאה, או לעדכן אותה אם כבר קיימת.
    לשמור את יתר ההגדרות בקובץ:
 
    ```ini
-   community-mods.library-browser = on
+   community-mods.meow-smart-playlists = on
    ```
 
 4. להפעיל את המכשיר עם ה־USB מחובר. לפתוח:
-   **Mod Menu → Community Mods → Installed → Library Browser**.
+   **Mod Menu → Community Mods → Installed → Smart Playlists**.
 5. אם מופיעה בקשת אישור לגרסה החדשה, לבחור **Allow**, ואז **Reload now** כאשר לא מתנגן סט.
 
-קובץ `library-browser-1.1.0.azmod` הוא אותה חבילת תוסף בפורמט AZ-MODS.
-אפשר לחלץ את תוכנו ישירות לתיקיית `MODS/community-mods/library-browser/` במקום שלב 2.
+קובץ `meow-smart-playlists-1.1.1.azmod` הוא אותה חבילת תוסף בפורמט AZ-MODS.
+אפשר לחלץ את תוכנו ישירות לתיקיית `MODS/community-mods/meow-smart-playlists/` במקום שלב 2.
 אין צורך להשתמש בשתי החבילות.
 
 ## שימוש
 
-1. בתוך Library Browser, לגלול אל **Smart Playlists >** שמתחת לפלייליסטים של ה־USB.
+1. בתוך התוסף, לגלול אל **Smart Playlists >** שמתחת לפלייליסטים של ה־USB.
 2. בשורת **Playlist**, ללחוץ ולסובב כדי לבחור **Smart 1**, **Smart 2** או **Smart 3**.
 3. לגלול לתנאי, ללחוץ לעריכה, לסובב לשינוי, ואז ללחוץ שוב לסיום. ההגדרות נשמרות אוטומטית.
 4. לבחור **Show matching tracks >** להצגת התוצאות. **BACK** חוזר לעריכת הכללים.

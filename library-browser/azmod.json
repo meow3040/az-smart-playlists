@@ -1,8 +1,8 @@
 {
   "azmod": 1,
-  "id": "library-browser",
-  "name": "Library Browser",
-  "version": "1.1.0",
+  "id": "meow-smart-playlists",
+  "name": "Smart Playlists",
+  "version": "1.1.1",
   "author": "Kyle-Hosman",
   "summary": "Browse USB libraries and save three smart playlists with BPM, genre-playlist, key, length and artist filters.",
   "description": "Open Smart Playlists beneath a USB in Library Browser. Save three rule sets with BPM, key, length and artist filters; sort by BPM, title or artist. Genre uses exported playlists named Genre: House, etc., because genre tags are not exposed.\n\nThese are view-only lists in the mod page. Load tracks through the native browser. Rules are saved in core settings and shared across USB ports. Each search rescans up to 20,000 tracks and displays the first 256 matches after sorting, with scan-limit notices. Library reads run on a worker. No library writes, firmware patches, audio changes or network.",

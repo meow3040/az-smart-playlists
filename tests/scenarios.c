@@ -433,7 +433,7 @@ static int harness_scenarios(const char *id)
 {
     if (!strcmp(id, "set-clock")) functional_set_clock();
     else if (!strcmp(id, "deck-overview")) functional_deck_overview();
-    else if (!strcmp(id, "library-browser")) functional_library_browser();
+    else if (!strcmp(id, "meow-smart-playlists")) functional_library_browser();
     else if (!strcmp(id, "level-meter")) functional_level_meter();
     else if (!strcmp(id, "surface-demo")) functional_surface_demo();
     else if (!strcmp(id, "deck-events")) functional_deck_events();

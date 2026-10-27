@@ -18,7 +18,7 @@
 #                                without unwind tables that becomes a crash
 #   -mno-outline-atomics        (only when the compiler knows it) keeps atomics inline
 
-MOD_ID          := library-browser
+MOD_ID          := meow-smart-playlists
 SRCS            := library-browser.c
 AZ_SDK_INCLUDE  ?= ../include
 OUT             ?= out

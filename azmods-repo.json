@@ -1,0 +1,29 @@
+{
+  "azmods_repo": 1,
+  "name": "Smart Playlists for XDJ-AZ",
+  "maintainer": "meow3040",
+  "homepage": "https://github.com/meow3040/az-smart-playlists",
+  "mods": [
+    {
+      "id": "meow-smart-playlists",
+      "name": "Smart Playlists",
+      "version": "1.1.1",
+      "author": "Kyle-Hosman",
+      "summary": "Browse USB libraries and save three smart playlists with BPM, genre-playlist, key, length and artist filters.",
+      "icon": "https://github.com/meow3040/az-smart-playlists/releases/download/v1.1.1/meow-smart-playlists-1.1.1-icon.png",
+      "package": "https://github.com/meow3040/az-smart-playlists/releases/download/v1.1.1/meow-smart-playlists-1.1.1.azmod",
+      "sha256": "565ad82f624ac36e568aef4efc680d65506458982c2c9aeda4b5226250369f62",
+      "size": 70849,
+      "firmware": [
+        "any"
+      ],
+      "hooks": false,
+      "source": "https://github.com/meow3040/az-smart-playlists/tree/main/library-browser",
+      "updated": "2026-10-27",
+      "category": "tools",
+      "license": "GPL-3.0-only",
+      "min_core": "1.2.3",
+      "description": "Open Smart Playlists beneath a USB in Library Browser. Save three rule sets with BPM, key, length and artist filters; sort by BPM, title or artist. Genre uses exported playlists named Genre: House, etc., because genre tags are not exposed.\n\nThese are view-only lists in the mod page. Load tracks through the native browser. Rules are saved in core settings and shared across USB ports. Each search rescans up to 20,000 tracks and displays the first 256 matches after sorting, with scan-limit notices. Library reads run on a worker. No library writes, firmware patches, audio changes or network."
+    }
+  ]
+}

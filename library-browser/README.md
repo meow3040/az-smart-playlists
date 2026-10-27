@@ -1,4 +1,9 @@
-# Library Browser
+# Smart Playlists
+
+Install this custom Library Browser extension by adding `meow3040/az-smart-playlists`
+under **Mod Menu > Community Mods > Repositories > Add**, then choosing **Smart Playlists**
+in **Browse**. Its independent id is `meow-smart-playlists`, so it can be installed beside
+the upstream Library Browser. The source folder retains its original `library-browser` name.
 
 An example of the library services added in AZ-MODS 1.2.3: the rekordbox playlists on the
 USBs in the deck, on a Mod Menu page. The knob moves, a click opens a playlist's tracks
